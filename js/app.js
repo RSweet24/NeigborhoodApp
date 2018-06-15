@@ -24,12 +24,12 @@ function AppViewModel() {
                 '&client_secret=' + clientSecret + '&query=' + marker.title +
                 '&v=20170708' + '&m=foursquare';
 
-            var markerResult = null;
             // Foursquare API
             $.getJSON(apiUrl).done(function (marker) {
                 var foundMarker = marker.response.venues[0];
                 var venueId = foundMarker.id;
                 var photoApiUrl = 'https://api.foursquare.com/v2/venues/'+ venueId +'/photos?ll=40.7,-74&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20220612';
+                // AJAX call to retrieve photo info
                 $.getJSON(photoApiUrl).done(function (photoInfo) {
                     var firstPhoto = photoInfo.response.photos.items[0];
                     fillInfoWindow(foundMarker, firstPhoto);

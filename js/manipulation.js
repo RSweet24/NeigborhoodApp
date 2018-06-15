@@ -10,7 +10,7 @@ $(document).ready(function () {
     setHeight();
   });
 });
-
+// Collapsing and uncollapsing navbar when on a smaller screen
 $(document).ready(function () {
   function alterClass() {
     let windowWidth = document.body.clientWidth;
