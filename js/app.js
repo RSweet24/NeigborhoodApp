@@ -1,5 +1,5 @@
 // Global Variables
-var map, clientID, clientSecret;
+var map, clientID, clientSecret,infoWindow;
 
 function AppViewModel() {
     var currentLocation = this;
@@ -11,6 +11,7 @@ function AppViewModel() {
     // one infowindow which will open at the marker that is clicked, and populate based
     // on that markers position.
     this.populateInfoWindow = function(marker, infowindow) {
+        infoWindow = infowindow;
         if (infowindow.marker != marker) {
             infowindow.setContent('');
             infowindow.marker = marker;
@@ -22,32 +23,27 @@ function AppViewModel() {
                 marker.lat + ',' + marker.lng + '&client_id=' + clientID +
                 '&client_secret=' + clientSecret + '&query=' + marker.title +
                 '&v=20170708' + '&m=foursquare';
-            
+
+            var markerResult = null;
             // Foursquare API
-            $.getJSON(apiUrl).done(function(marker) {
-                var response = marker.response.venues[0];
-                currentLocation.street = response.location.formattedAddress[0];
-                currentLocation.city = response.location.formattedAddress[1];
-                currentLocation.zip = response.location.formattedAddress[3];
-                currentLocation.country = response.location.formattedAddress[4];
-                currentLocation.category = response.categories[0].shortName;
-
-                currentLocation.htmlContentFoursquare =
-                    '<div>' + '<h5 class="iw_subtitle">(' + currentLocation.category +
-                    ')</h5>' + '<div>' +
-                    '<h6 class="iw_address_title"> Address: </h6>' +
-                    '<p class="iw_address">' + currentLocation.street + '</p>' +
-                    '<p class="iw_address">' + currentLocation.city + '</p>' +
-                    '</div>' + '</div>';
-
-                infowindow.setContent(currentLocation.htmlContent + currentLocation.htmlContentFoursquare);
+            $.getJSON(apiUrl).done(function (marker) {
+                var foundMarker = marker.response.venues[0];
+                var venueId = foundMarker.id;
+                var photoApiUrl = 'https://api.foursquare.com/v2/venues/'+ venueId +'/photos?ll=40.7,-74&client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20220612';
+                $.getJSON(photoApiUrl).done(function (photoInfo) {
+                    var firstPhoto = photoInfo.response.photos.items[0];
+                    fillInfoWindow(foundMarker, firstPhoto);
+                }).fail(function () {
+                    console.log("Whoops");
+                });
             }).fail(function() {
                 // Send alert
                 alert(
                     "There was an issue loading the Foursquare API. Please refresh your page to try again."
                 );
-            });
+                });
 
+            
             this.htmlContent = '<div>' + '<h4 class="iw_title">' + marker.title +
                 '</h4>' + '</div>';
 
@@ -58,6 +54,27 @@ function AppViewModel() {
             });
         }
     };
+
+    function fillInfoWindow(foundMarker, photo) {
+        currentLocation.street = foundMarker.location.formattedAddress[0];
+        currentLocation.city = foundMarker.location.formattedAddress[1];
+        currentLocation.zip = foundMarker.location.formattedAddress[3];
+        currentLocation.country = foundMarker.location.formattedAddress[4];
+        currentLocation.category = foundMarker.categories[0].shortName;
+               
+        var firstPhotoUrl = photo.prefix + 'cap150' + photo.suffix;
+
+        currentLocation.htmlContentFoursquare =
+            '<div>' + '<h5 class="iw_subtitle">(' + currentLocation.category +
+            ')</h5>' + '<div>' + '<img src="' + firstPhotoUrl + '">' + '</div>' +
+            '<div>' +
+            '<h6 class="iw_address_title"> Address: </h6>' +
+            '<p class="iw_address">' + currentLocation.street + '</p>' +
+            '<p class="iw_address">' + currentLocation.city + '</p>' +
+            '</div>' + '</div>';
+
+        infoWindow.setContent(currentLocation.htmlContent + currentLocation.htmlContentFoursquare);
+    }
 
     this.populateAndBounceMarker = function() {
         currentLocation.populateInfoWindow(this, currentLocation.largeInfoWindow);

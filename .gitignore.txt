@@ -1,0 +1,5 @@
+# Ignore file named 'NeigborhoodApp.code-workspace'
+NeigborhoodApp.code-workspace
+
+#Ignore folder name '.vscode'
+.vscode
