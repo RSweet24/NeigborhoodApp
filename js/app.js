@@ -34,7 +34,7 @@ function AppViewModel() {
                     var firstPhoto = photoInfo.response.photos.items[0];
                     fillInfoWindow(foundMarker, firstPhoto);
                 }).fail(function () {
-                    console.log("Whoops");
+                    alert('There was an issue calling the Foursquare API please refresh and try again');
                 });
             }).fail(function() {
                 // Send alert
@@ -61,8 +61,13 @@ function AppViewModel() {
         currentLocation.zip = foundMarker.location.formattedAddress[3];
         currentLocation.country = foundMarker.location.formattedAddress[4];
         currentLocation.category = foundMarker.categories[0].shortName;
-               
-        var firstPhotoUrl = photo.prefix + 'cap150' + photo.suffix;
+            
+        if(photo === undefined){
+            firstPhotoUrl = 'https://image.flaticon.com/icons/svg/462/462949.svg'
+        }else{
+            var firstPhotoUrl = photo.prefix + 'cap150' + photo.suffix;
+        }
+        
 
         currentLocation.htmlContentFoursquare =
             '<div>' + '<h5 class="iw_subtitle">(' + currentLocation.category +
